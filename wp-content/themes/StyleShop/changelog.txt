@@ -1,0 +1,15 @@
+version 1.1 ( updated 03-07-2013 )
+- Full compatibility with WooCommerce 2.0
+- Integrated the default WordPress image system. It makes the theme work better on shared hostings and provides compatibility with plugins ( JetPack, WP Retina etc. )
+- Full compatiblity with WPML plugin
+- Fixed the checkout page layout issues on mobile devices
+- Fixed the issue with price, equal to 0 on Variable products
+- Added 'Custom CSS' option to ePanel
+- Added Subcategories support on product and category pages
+- Integrated different images for variations functionality
+
+Nearly all files have been updated this time. Please, make sure you update all files.
+
+version 1.0
+
+- initial release
