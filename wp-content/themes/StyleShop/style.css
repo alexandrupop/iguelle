@@ -629,7 +629,7 @@ body.woocommerce div.product .woocommerce-tabs .panel, body.woocommerce #content
 
 #reviews #comments ol.commentlist li .comment-text p.meta { margin: 0; padding-bottom: 10px; }
 
-.upsells.products h2, .related.products h2 { font-size: 32px; color: #2e2e2e; margin-bottom: 45px; }
+.upsells.products h2, .related.products h2 { font-size: 32px; color: #2e2e2e; margin-bottom: 20px; }
 
 /*------------------------------------------------*/
 /*-------------------[COMMENTS]-------------------*/
@@ -651,7 +651,7 @@ h1#comments, #reply-title { font-size: 32px; font-weight: 300; color: #2e2e2e; }
 
 	.commentlist .children { padding-left: 87px; }
 
-	#respond { margin-top: 60px; padding-top: 56px; }
+	#respond { margin-top: 30px; padding-top: 25px; }
 
 	#commentform input[type="text"] { width: 40%; }
 	#commentform textarea { width: 89%; }

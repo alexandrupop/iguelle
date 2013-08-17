@@ -19,7 +19,19 @@ $tabs = apply_filters( 'woocommerce_product_tabs', array() );
 
 if ( ! empty( $tabs ) ) : ?>
 
-	<div class="woocommerce-tabs">
+<div style="clear: both; margin-bottom: 30px;"></div>
+<div>
+	<?php foreach ( $tabs as $key => $tab ) : ?>
+		<div id="tab-<?php echo $key ?>" style="margin-bottom: 20px">
+			<?php call_user_func( $tab['callback'], $key, $tab ) ?>
+		</div>
+
+	<?php endforeach; ?>
+</div>
+
+
+
+	<!-- <div class="woocommerce-tabs">
 		<ul class="tabs">
 			<?php foreach ( $tabs as $key => $tab ) : ?>
 
@@ -36,6 +48,6 @@ if ( ! empty( $tabs ) ) : ?>
 			</div>
 
 		<?php endforeach; ?>
-	</div>
+	</div> -->
 
 <?php endif; ?>
