@@ -1076,3 +1076,21 @@ body.logged-in #top-navigation nav li.logged-out-nav {
 .widget_tag_cloud .widget-title {
 	display: none;
 }
+
+
+
+
+body.home .et-products {
+  padding: 44px 0px 10px 0px;
+}
+
+.woocommerce-ordering {
+  display: none;
+}
+
+
+.igu_product_li {
+  float: none !important;
+  width: auto !important;
+  margin: 0 0 40px !important;
+}

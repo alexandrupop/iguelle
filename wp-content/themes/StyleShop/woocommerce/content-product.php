@@ -29,8 +29,8 @@ if ( ! $product->is_visible() )
 $woocommerce_loop['loop']++;
 
 $thumb = '';
-$width = 140;
-$height = 135;
+$width = 580;
+$height = 773;
 $classtext = '';
 $titletext = get_the_title();
 $thumbnail = get_thumbnail( $width, $height, $classtext, $titletext, $titletext, false, 'ProductImage' );
@@ -38,31 +38,36 @@ $thumb = $thumbnail["thumb"];
 
 $et_price_before = 'variable' == $product->product_type ? $product->min_variation_regular_price : $product->regular_price;
 ?>
-<li>
+<li class="igu_product_li">
+  <div style="float: left; width: 70%; position: relative;">
 
-	<?php // do_action( 'woocommerce_before_shop_loop_item' ); ?>
+  	<?php // do_action( 'woocommerce_before_shop_loop_item' ); ?>
 
-	<a href="<?php the_permalink(); ?>">
-		<?php print_thumbnail( $thumb, $thumbnail["use_timthumb"], $titletext, $width, $height, $classtext ); ?>
-	</a>
-	<?php woocommerce_show_product_sale_flash( $post, $product ); ?>
-	<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+  	<a href="<?php the_permalink(); ?>">
+  		<?php print_thumbnail( $thumb, $thumbnail["fullpath"], $titletext, $width, $height, $classtext ); ?>
+  	</a>
+  	
+  </div>
+  <div style="float: left; width: 30%">
+<?php woocommerce_show_product_sale_flash( $post, $product ); ?>
+  	<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
 
-<?php
-	$product_ids_on_sale = et_woocommerce_get_product_on_sale_ids();
-?>
+    <?php
+    	$product_ids_on_sale = et_woocommerce_get_product_on_sale_ids();
+    ?>
 
-<?php if ( ! in_array( get_the_ID(), array_map( 'intval', $product_ids_on_sale ) ) ) { ?>
-	<?php if ( '' != $product->get_price_html() ) : ?>
-	<span class="et-main-price"><?php echo $product->get_price_html(); ?></span>
-	<?php endif; ?>
-<?php } else { ?>
-	<span class="et-price-button">
-		<span class="et-price-before"><del><?php echo woocommerce_price( $et_price_before ); ?></del></span>
-		<span class="et-price-sale"><?php echo woocommerce_price( $product->get_price() ); ?></span>
-	</span>
-<?php } ?>
+    <?php if ( ! in_array( get_the_ID(), array_map( 'intval', $product_ids_on_sale ) ) ) { ?>
+    	<?php if ( '' != $product->get_price_html() ) : ?>
+    	<span class="et-main-price"><?php echo $product->get_price_html(); ?></span>
+    	<?php endif; ?>
+    <?php } else { ?>
+    	<span class="et-price-button">
+    		<span class="et-price-before"><del><?php echo woocommerce_price( $et_price_before ); ?></del></span>
+    		<span class="et-price-sale"><?php echo woocommerce_price( $product->get_price() ); ?></span>
+    	</span>
+    <?php } ?>
 
-	<?php // do_action( 'woocommerce_after_shop_loop_item' ); ?>
+    <?php // do_action( 'woocommerce_after_shop_loop_item' ); ?>  </div>
+  <div class="clear"></div>
 
 </li>
