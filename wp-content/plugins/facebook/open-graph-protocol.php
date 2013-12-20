@@ -1,76 +1,87 @@
 <?php
 
 /**
- * Output Open Graph protocol for consumption by Facebook and other consuming agents
+ * Output Open Graph protocol for consumption by Facebook services building a summary of the webpage.
  *
  * @since 1.1
+ *
  * @link http://ogp.me/ Open Graph protocol
  */
 class Facebook_Open_Graph_Protocol {
 	/**
-	 * Base IRI of Open Graph protocol RDFa properties
+	 * Base IRI of Open Graph protocol RDFa properties.
 	 *
 	 * @since 1.1
+	 *
 	 * @var string
 	 */
 	const OGP_NS = 'http://ogp.me/ns#';
 
 	/**
-	 * Base IRI of Facebook RDFa properties
+	 * Base IRI of Facebook RDFa properties.
 	 *
 	 * @since 1.1
+	 *
 	 * @var string
 	 */
 	const FB_NS = 'http://ogp.me/ns/fb#';
 
 	/**
-	 * Base IRI of Open Graph protocol article object global properties
+	 * Base IRI of Open Graph protocol article object global properties.
 	 *
 	 * @since 1.1
+	 *
 	 * @var string
 	 */
 	const ARTICLE_NS = 'http://ogp.me/ns/article#';
 
 	/**
-	 * Base IRI of Open Graph protocol profile object global properties
+	 * Base IRI of Open Graph protocol profile object global properties.
 	 *
 	 * @since 1.1
+	 *
 	 * @var string
 	 */
 	const PROFILE_NS = 'http://ogp.me/ns/profile#';
 
 	/**
-	 * Base IRI of Open Graph protocol video object global properties
+	 * Base IRI of Open Graph protocol video object global properties.
 	 *
 	 * @since 1.1
+	 *
 	 * @var string
 	 */
 	const VIDEO_NS = 'http://ogp.me/ns/video#';
 
 	/**
-	 * Minimum edge of an acceptable Open Graph protocol image in whole pixels
+	 * Minimum edge of an acceptable Open Graph protocol image in whole pixels.
 	 *
 	 * @since 1.1.9
+	 *
 	 * @var int
 	 */
 	const MIN_IMAGE_DIMENSION = 200;
 
 	/**
-	 * Only list the first N eligible Open Graph protocol images
+	 * Only list the first N eligible Open Graph protocol images.
+	 *
 	 * Facebook helps a person choose one of three parsed images when a link is pasted into a message
 	 * Other consumers of Open Graph protocol data (Google, Twitter, etc.) may index additional images; increase this number to trade-off speed for coverage
 	 *
 	 * @since 1.5
+	 *
 	 * @var int
 	 */
 	const MAX_IMAGE_COUNT = 3;
 
 	/**
-	 * Recursively build RDFa <meta> elements used for Open Graph protocol
+	 * Recursively build RDFa <meta> elements used for Open Graph protocol.
 	 *
 	 * @since 1.0
+	 *
 	 * @param string $property whitespace separated list of CURIEs placed in a property attribute
 	 * @param mixed content attribute value for the given property. use an array for array property values or structured properties
+	 * @return void
 	 */
 	 public static function meta_elements( $property, $content ) {
 		if ( empty( $property ) || empty( $content ) )
@@ -106,6 +117,7 @@ class Facebook_Open_Graph_Protocol {
 	 * Clean post description text in preparation for Open Graph protocol description or Facebook post caption|description
 	 *
 	 * @since 1.1
+	 *
 	 * @uses strip_shortcodes()
 	 * @uses wp_trim_words()
 	 * @param string $description description text
@@ -158,7 +170,16 @@ class Facebook_Open_Graph_Protocol {
 		if ( ! is_array( $ogp ) || empty( $ogp ) )
 			return array();
 
-		// map the referenced used by this plugin as well as OGP globals
+		/**
+		 * Map RDFa Core CURIEs and prefixes
+		 *
+		 * @since 1.1.6
+		 *
+		 * @param array {
+		 *     @type string RDFa CURIE
+		 *     @type array 'prefix' abbreviation recognized without a prefix mapping on a parent element
+		 * }
+		 */
 		$curies = apply_filters( 'facebook_rdfa_mappings', array(
 			self::OGP_NS => array( 'prefix' => 'og' ),
 			self::FB_NS => array( 'prefix' => 'fb' ),
@@ -217,7 +238,11 @@ class Facebook_Open_Graph_Protocol {
 	 * We use full IRIs for consistent mapping between mapped CURIE prefixes defined in a parent element and self-contained properties using a full IRI
 	 *
 	 * @since 1.0
+	 *
 	 * @link http://www.w3.org/TR/rdfa-syntax/#s_curieprocessing RDFa Core 1.1 CURIE and IRI processing
+	 * @global stdClass|WP_Post $post WordPress post object for the current view
+	 * @global Facebook_Loader $facebook_loader
+	 * @return void
 	 */
 	public static function add_og_protocol() {
 		global $post, $facebook_loader;
@@ -238,10 +263,18 @@ class Facebook_Open_Graph_Protocol {
 			$meta_tags[ self::OGP_NS . 'title' ] = get_bloginfo( 'name' );
 			$meta_tags[ self::OGP_NS . 'description' ] = get_bloginfo( 'description' );
 			$meta_tags[ self::OGP_NS . 'url' ] = home_url();
-		} else if ( is_single() && empty( $post->post_password ) ) {
+		} else if ( is_singular() && empty( $post->post_password ) ) {
 			setup_postdata( $post );
-			$post_type = get_post_type();
-			$meta_tags[ self::OGP_NS . 'url' ] = apply_filters( 'facebook_rel_canonical', get_permalink() );
+			$post_type = get_post_type( $post );
+
+			/**
+			 * Canonical URL for the singular page.
+			 *
+			 * @since 1.1.6
+			 * @param string absolute URI of the current post context
+			 */
+			$meta_tags[ self::OGP_NS . 'url' ] = apply_filters( 'facebook_rel_canonical', get_permalink( $post->ID ) );
+
 			if ( post_type_supports( $post_type, 'title' ) )
 				$meta_tags[ self::OGP_NS . 'title' ] = get_the_title();
 			if ( post_type_supports( $post_type, 'excerpt' ) ) {
@@ -294,6 +327,23 @@ class Facebook_Open_Graph_Protocol {
 					}
 				}
 				unset( $videos );
+
+				if ( empty( $meta_tags[ self::OGP_NS . 'video' ] ) ) {
+					// try to find well-known and easily mapped video provider WP_Embeds
+					$videos = self::get_embed_videos( $post );
+					if ( ! empty( $videos ) ) {
+						foreach( $videos as $video_url => $video ) {
+							if ( empty( $video ) )
+								continue;
+							if ( isset( $video['image'] ) ) {
+								$meta_tags[ self::OGP_NS . 'image' ][] = $video['image'];
+								unset( $video['image'] );
+							}
+							$meta_tags[ self::OGP_NS . 'video' ] = array_values( $video );
+						}
+					}
+					unset( $videos );
+				}
 			}
 
 			// include MP3s for audio post formats
@@ -305,6 +355,7 @@ class Facebook_Open_Graph_Protocol {
 			}
 
 			if ( post_type_supports( $post_type, 'author' ) && isset( $post->post_author ) ) {
+				// Facebook user helper
 				if ( ! class_exists( 'Facebook_User' ) )
 					require_once( $facebook_loader->plugin_directory . 'facebook-user.php' );
 
@@ -342,6 +393,7 @@ class Facebook_Open_Graph_Protocol {
 				if ( $description )
 					$meta_tags[ self::OGP_NS . 'description'] = $description;
 
+				// Facebook user helper
 				if ( ! class_exists( 'Facebook_User' ) )
 					require_once( $facebook_loader->plugin_directory . 'facebook-user.php' );
 
@@ -358,12 +410,34 @@ class Facebook_Open_Graph_Protocol {
 		} else if ( is_page() ) {
 			$meta_tags[ self::OGP_NS . 'type' ] = 'article';
 			$meta_tags[ self::OGP_NS . 'title' ] = get_the_title();
+			// duplicate_hook
 			$meta_tags[ self::OGP_NS . 'url' ] = apply_filters( 'facebook_rel_canonical', get_permalink() );
 		}
 
+		/**
+		 * Customize Open Graph protocol for the site or page before output.
+		 *
+		 * Add, change, and delete Open Graph protocol values used to summarize a link shared on Facebook and create new Open Graph objects.
+		 *
+		 * @since 1.0
+		 * @param array $meta_tags {
+		 *     Open Graph protocol values to be output
+		 *
+		 *     @type string Full IRI RDFa Core property
+		 *     @type mixed property value or multiple values
+		 * }
+		 * @param stdClass|WP_Post $post the current post global if set
+		 */
 		$meta_tags = apply_filters( 'fb_meta_tags', $meta_tags, $post );
 
-		// default: true while Facebook crawler corrects its indexing of full IRI values
+		/**
+		 * Control auto-prefixing or full IRI RDFa Core 1.1 properties output for the page.
+		 *
+		 * Use prefixed values (e.g. og:image) by default to maximize compatibility with indexers. Assumes prefix CURIE mappings will be set on <head> or <html> to properly map the prefixes or the publisher is not concerned with RDFa Core 1.1 compatibility and reserved prefixes.
+		 *
+		 * @since 1.1.6
+		 * @param bool default true
+		 */
 		if ( apply_filters( 'facebook_ogp_prefixed', true ) )
 			$meta_tags = self::prefixed_properties( $meta_tags );
 
@@ -373,36 +447,44 @@ class Facebook_Open_Graph_Protocol {
 	}
 
 	/**
-	 * Classify the current post as an Open Graph object type
+	 * Classify the current post as an Open Graph object type.
 	 *
 	 * @since 1.5
+	 *
 	 * @link https://developers.facebook.com/docs/reference/opengraph/object-type/ Facebook global object types
-	 * @param WP_Post $post the post to classify
+	 * @param stdClass|WP_Post $post the post to classify
 	 * @return string Open Graph protocol type property value
 	 */
 	public static function get_post_og_type( $post ) {
-		$og_type = 'article';
-		if ( ! $post )
+		$og_type = 'website';
+		if ( ! ( $post && isset( $post->ID ) ) )
 			return $og_type;
 
 		// treat video post format as OG type video
 		if ( has_post_format( 'video', $post ) )
 			$og_type = 'video.other';
-		else if ( has_post_format( 'image', $post ) )
-			$og_type = 'photo';
+		else if ( get_post_type( $post ) === 'post' )
+			$og_type = 'article';
+
 		$og_type = apply_filters( 'facebook_og_type', $og_type, $post );
 		if ( ! $og_type )
-			$og_type = 'article';
+			$og_type = 'website';
 
 		return $og_type;
 	}
 
 	/**
-	 * Map WordPress post data to Open Graph article object properties
+	 * Map WordPress post data to Open Graph article object properties.
 	 *
 	 * @since 1.5
-	 * @param WP_Post $post the post of interest
-	 * @return array associative array of OGP properties and values related to the post
+	 *
+	 * @param stdClass|WP_Post $post the post of interest
+	 * @return array {
+	 *     Associative array of OGP properties and values related to the post
+	 *
+	 *     @type string Full IRI Open Graph protocol property
+	 *     @type string|array Open Graph protocol property value
+	 * }
 	 */
 	public static function get_article_properties( $post ) {
 		global $facebook_loader;
@@ -430,7 +512,7 @@ class Facebook_Open_Graph_Protocol {
 		unset( $facebook_page );
 
 		// add the first category as a section. all other categories as tags
-		$cat_ids = get_the_category();
+		$cat_ids = get_the_category( $post->ID );
 		if ( ! empty( $cat_ids ) ) {
 			$no_category = apply_filters( 'the_category', __( 'Uncategorized' ) );
 
@@ -454,7 +536,7 @@ class Facebook_Open_Graph_Protocol {
 		}
 
 		// add tags. treat tags as lower priority than multiple categories
-		$tags = get_the_tags();
+		$tags = get_the_tags( $post->ID );
 		if ( $tags ) {
 			if ( ! isset( $ogp[ self::ARTICLE_NS . 'tag' ] ) )
 				$ogp[ self::ARTICLE_NS . 'tag' ] = array();
@@ -468,12 +550,20 @@ class Facebook_Open_Graph_Protocol {
 	}
 
 	/**
-	 * Extract Open Graph protocol image information from a WordPress image attachment
+	 * Extract Open Graph protocol image information from a WordPress image attachment.
 	 *
 	 * @since 1.5
+	 *
+	 * @uses wp_get_attachment_image_src()
 	 * @param int $attachment_id post id of the attachment object
 	 * @param string $size requested size. one of thumbnail, medium, large, or full
-	 * @return array associative array with URL, width, height or empty array if minimum requirements not met
+	 * @return array {
+	 *     Attachment converted into image, width, and height values or empty if no image data found or minimum requirements not met
+	 *
+	 *     @type string 'url' Full URI of the attachment for the requested size
+	 *     @type int 'width' Width of the image in whole pixels
+	 *     @type int 'height' Height of the image in whole pixels
+	 * }
 	 */
 	public static function attachment_to_og_image( $attachment_id, $size = 'full' ) {
 		if ( ! ( is_string( $size ) && $size ) )
@@ -493,6 +583,7 @@ class Facebook_Open_Graph_Protocol {
 			else if ( $image['width'] < self::MIN_IMAGE_DIMENSION )
 				return array();
 		}
+
 		if ( ! empty( $attachment_height ) ) {
 			$image['height'] = absint( $attachment_height );
 			if ( ! $image['height'] )
@@ -505,12 +596,19 @@ class Facebook_Open_Graph_Protocol {
 	}
 
 	/**
-	 * Identify image attachments related to the post
-	 * Request the full size of the attachment, not necessarily the same as the size used in the post
+	 * Identify image attachments related to the post.
+	 *
+	 * Request the full size of the attachment, not necessarily the same as the size used in the post.
 	 *
 	 * @since 1.5
-	 * @param WP_Post $post WordPress post of interest
-	 * @return array array of associative arrays containing OGP image structured data
+	 *
+	 * @param stdClass|WP_Post $post WordPress post of interest
+	 * @return array {
+	 *     Open Graph protocol image structured data
+	 *
+	 *     @type string URL of the image
+	 *     @type array associative array of image data
+	 * }
 	 */
 	public static function get_og_images( $post ) {
 		$og_images = array();
@@ -548,6 +646,22 @@ class Facebook_Open_Graph_Protocol {
 			unset( $images );
 		}
 
+		// test for WP_Embed handled images
+		if ( ! empty( $post->post_content ) ) {
+			// Instagram
+			preg_match_all( '#\s*http://instagr(\.am|am\.com)/p/(.*)/\s*#i', $post->post_content, $matches );
+			if ( isset( $matches[2] ) ) {
+				foreach( $matches[2] as $instagram_id ) {
+					$instagram_url = esc_url_raw( 'http://instagram.com/p/' . $instagram_id . '/media/?size=l', array( 'http' ) );
+					if ( ! $instagram_url || isset( $og_images[$instagram_url] ) )
+						continue;
+					$og_images[$instagram_url] = array( 'url' => $instagram_url );
+					unset( $instagram_url );
+				}
+			}
+			unset( $matches );
+		}
+
 		// add gallery content
 		if ( function_exists( 'get_post_galleries' ) ) {
 			// use get_post_galleries function from WP 3.6+
@@ -580,12 +694,19 @@ class Facebook_Open_Graph_Protocol {
 	}
 
 	/**
-	 * Identify video attachments related to the post
-	 * Prefer SWF and MP4 videos
+	 * Identify video attachments related to the post.
+	 *
+	 * Prefer SWF and MP4 videos.
 	 *
 	 * @since 1.5
-	 * @param WP_Post $post WordPress post of interest
-	 * @return array array of associative arrays containing OGP video structured data
+	 *
+	 * @param stdClass|WP_Post $post WordPress post of interest
+	 * @return array {
+	 *     Array of associative arrays containing OGP video structured data
+	 *
+	 *     @type string URL of the video
+	 *     @type array Open Graph protocol video properties with possible video object namespaced properties
+	 * }
 	 */
 	public static function get_og_videos( $post ) {
 		$og_videos = array();
@@ -638,11 +759,59 @@ class Facebook_Open_Graph_Protocol {
 	}
 
 	/**
-	 * Identify MP3 (audio/mpeg) attachments related to the post
+	 * Convert popular video providers to SWF and image URLs
+	 *
+	 * @since 1.5.3
+	 *
+	 * @param stdClass|WP_Post $post WordPress post of interest
+	 * @return array {
+	 *     Array of associative arrays containing OGP video structured data for WP_Embed autolinked providers
+	 *
+	 *     @type string URL of the video
+	 *     @type array Open Graph protocol video properties with possible 'image' key containing an og:image strutured data array for the video
+	 * }
+	 */
+	public static function get_embed_videos( $post ) {
+		$og_videos = array();
+
+		if ( ! ( isset( $post->post_content ) && $post->post_content ) )
+			return $og_videos;
+
+		// @see WP_Embed::autoembed()
+		preg_match_all( '|^\s*(https?://[^\s"]+)\s*$|im', $post->post_content, $embed_urls );
+		if ( ! isset( $embed_urls[1] ) )
+			return $og_videos;
+
+		$embed_urls = array_unique( $embed_urls[1], SORT_STRING );
+
+		foreach( $embed_urls as $embed_url ) {
+			if ( preg_match( '#^https?://www\.youtube\.com/watch\?(.*)#i', $embed_url, $matches ) ) {
+				parse_str( $matches[1], $youtube_parameters );
+				if ( isset( $youtube_parameters['v'] ) && $youtube_parameters['v'] )
+					$og_videos = self::youtube_video_to_open_graph( $youtube_parameters['v'], $og_videos );
+				unset( $youtube_parameters );
+			} else if ( preg_match( '#^http://youtu\.be/(.*)#i', $embed_url, $matches ) ) {
+				$og_videos = self::youtube_video_to_open_graph( $matches[1], $og_videos );
+			} else if ( preg_match( '#^https?://(www\.)?vimeo\.com/([0-9]+)\??#i', $embed_url, $matches ) ) {
+				$og_videos = self::vimeo_video_to_open_graph( $matches[2], $og_videos );
+			}
+		}
+
+		return $og_videos;
+	}
+
+	/**
+	 * Identify MP3 (audio/mpeg) attachments related to the post.
 	 *
 	 * @since 1.5
-	 * @param WP_Post $post WordPress post of interest
-	 * @return array array of associative arrays containing OGP audio structured data
+	 *
+	 * @param stdClass|WP_Post $post WordPress post of interest
+	 * @return array {
+	 *     Array of associative arrays containing OGP audio structured data
+	 *
+	 *     @type string URL of the audio file
+	 *     @type array Open Graph protocol audio properties
+	 * }
 	 */
 	public static function get_og_audio( $post ) {
 		$og_audios = array();
@@ -675,9 +844,18 @@ class Facebook_Open_Graph_Protocol {
 	/**
 	 * Find gallery shortcodes in the post. Build Open Graph protocol image results.
 	 *
+	 * Used if get_post_galleries() is not present (adds support for WordPress < 3.6).
+	 *
 	 * @since 1.1.9
-	 * @param stdClass $post current post object
-	 * @return array array of arrays containing Open Graph protocol image markup
+	 *
+	 * @param stdClass|WP_Post $post current post object
+	 * @param array $existing_images add to an existing list of images. Check for duplication.
+	 * @return array {
+	 *     Array of arrays containing Open Graph protocol image markup
+	 *
+	 *     @type string URL of the image
+	 *     @type array Open Graph protocol image properties
+	 * }
 	 */
 	public static function gallery_images( $post, $existing_images = array() ) {
 		global $shortcode_tags;
@@ -769,6 +947,91 @@ class Facebook_Open_Graph_Protocol {
 		}
 
 		return $existing_images;
+	}
+
+	/**
+	 * Build Open Graph protocol markup for a single YouTube video identifier.
+	 *
+	 * @since 1.5.3
+	 *
+	 * @link https://developers.google.com/youtube/player_parameters YouTube Embedded Player Parameters
+	 * @param string $youtube_id YouTube video identifier
+	 * @param array $exiting_videos Existing matched videos. Avoid duplication by comparing YouTube HTML embed URIs
+	 * @return array Passed 'existing_videos' array with a possible YouTube video added
+	 */
+	public static function youtube_video_to_open_graph( $youtube_id, $og_videos = array() ) {
+		if ( ! is_array( $og_videos ) )
+			$og_videos = array();
+
+		if ( ! ( is_string( $youtube_id ) && $youtube_id ) )
+			return $og_videos;
+
+		$iframe_url = esc_url_raw( 'https://www.youtube.com/embed/' . $youtube_id . '?autoplay=1&rel=0', array( 'https' ) );
+		if ( ! $iframe_url || isset( $og_videos[ $iframe_url ] ) )
+			return $existing_videos;
+
+		$flash_url = esc_url_raw( 'https://www.youtube.com/v/' . $youtube_id . '?version=3&autoplay=1&rel=0', array( 'https' ) );
+		if ( ! $flash_url )
+			return $og_videos;
+
+		$og_videos[ $iframe_url ] = array(
+			'html' => array(
+				'url' => $iframe_url,
+				'type' => 'text/html'
+			),
+			'swf' => array(
+				'url' => $flash_url,
+				'type' => 'application/x-shockwave-flash'
+			)
+		);
+
+		$image_url = esc_url_raw( 'http://img.youtube.com/vi/' . $youtube_id . '/sddefault.jpg', array( 'http', 'https' ) );
+		if ( $image_url ) {
+			$og_videos[ $iframe_url ]['image'] = array( 'url' => $image_url );
+		}
+
+		return $og_videos;
+	}
+
+	/**
+	 * Build Open Graph protocol markup for a single Vimeo video identifier.
+	 *
+	 * Note: this function does not query the Vimeo API and therefore does not include a thumbnail image for the video. For best results be sure to set your own og:image.
+	 *
+	 * @since 1.5.3
+	 *
+	 * @link http://developer.vimeo.com/player/embedding Vimeo Embedded Player documentation
+	 * @param string $vimeo_id Vimeo video identifier
+	 * @param array $exiting_videos Existing matched videos. Avoid duplication by comparing Vimeo HTML embed URIs
+	 * @return array Passed 'existing_videos' array with a possible Vimeo video added
+	 */
+	public static function vimeo_video_to_open_graph( $vimeo_id, $og_videos = array() ){
+		if ( ! is_array( $og_videos ) )
+			$og_videos = array();
+
+		if ( ! ( is_string( $vimeo_id ) && $vimeo_id ) )
+			return $og_videos;
+
+		$iframe_url = esc_url_raw( 'https://player.vimeo.com/video/' . $vimeo_id . '?autoplay=1', array( 'https' ) );
+		if ( ! $iframe_url || isset( $og_videos[ $iframe_url ] ) )
+			return $og_videos;
+
+		$flash_url = esc_url_raw( 'https://vimeo.com/moogaloop.swf?' . http_build_query( array( 'clip_id' => $vimeo_id, 'autoplay' => 1 ), '', '&' ), array( 'https' ) );
+		if ( ! $flash_url )
+			return $og_videos;
+
+		$og_videos[ $iframe_url ] = array(
+			'html' => array(
+				'url' => $iframe_url,
+				'type' => 'text/html'
+			),
+			'swf' => array(
+				'url' => $flash_url,
+				'type' => 'application/x-shockwave-flash'
+			)
+		);
+
+		return $og_videos;
 	}
 }
 ?>

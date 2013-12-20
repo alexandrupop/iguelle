@@ -1,15 +1,17 @@
 <?php
 /**
- * Add content to a WordPress user profile
+ * Add content to a WordPress user profile.
  *
  * @since 1.2
  */
 class Facebook_User_Profile {
 
 	/**
-	 * Conditionally load features on the edit profile page
+	 * Conditionally load features on the edit profile page.
 	 *
 	 * @since 1.2
+	 *
+	 * @return void
 	 */
 	public static function init() {
 		if ( ! current_user_can( 'edit_posts' ) )
@@ -26,10 +28,13 @@ class Facebook_User_Profile {
 	}
 
 	/**
-	 * Add the login JavaScript to the WordPress script queue
+	 * Add the login JavaScript to the WordPress script queue.
 	 *
 	 * @since 1.5
+	 *
 	 * @uses wp_enqueue_script()
+	 * @global \WP_Scripts $wp_scripts Add a script block to the enqueued script handle
+	 * @return void
 	 */
 	public static function enqueue_scripts() {
 		global $wp_scripts;
@@ -50,10 +55,12 @@ class Facebook_User_Profile {
 	}
 
 	/**
-	 * Allow an author to disable posting to Timeline by default
+	 * Allow an author to disable posting to Timeline by default.
 	 *
 	 * @since 1.2
-	 * @param $wordpress_user WP_User object for the current profile
+	 *
+	 * @param WP_User $wordpress_user WordPress user object for the current profile.
+	 * @return void
 	 */
 	public static function personal_options( $wordpress_user ) {
 		if ( ! ( $wordpress_user && isset( $wordpress_user->ID ) ) )
@@ -72,10 +79,13 @@ class Facebook_User_Profile {
 	}
 
 	/**
-	 * Add a Facebook section to the WordPress user profile page
+	 * Add a Facebook section to the WordPress user profile page.
 	 *
 	 * @since 1.5
-	 * @param WP_User $wp_user WordPress user for the current profile page
+	 *
+	 * @global \Facebook_Loader $facebook_loader Access Facebook application credentials.
+	 * @param WP_User $wp_user WordPress user for the current profile page.
+	 * @return void
 	 */
 	public static function facebook_section( $wp_user ) {
 		global $facebook_loader;
@@ -98,9 +108,10 @@ class Facebook_User_Profile {
 			if ( isset( $facebook_loader->credentials['app_id'] ) )
 				$section .= ' data-appid="' . esc_attr( $facebook_loader->credentials['app_id'] ) . '">';
 			$section .= '<tr><th scope="row">' . esc_html( _x( 'Connected Profile', 'Connected Facebook Profile', 'facebook' ) ) . '</th>';
-			$section .= '<td><a href="' . esc_url( Facebook_User::facebook_profile_link( $facebook_user_data ), array( 'http', 'https' ) ) . '">' . esc_html( $facebook_user_data['fb_uid'] ) . '</a>';
+			$section .= '<td><p><a href="' . esc_url( Facebook_User::facebook_profile_link( $facebook_user_data ), array( 'http', 'https' ) ) . '">' . esc_html( $facebook_user_data['fb_uid'] ) . '</a></p>';
 			if ( isset( $facebook_user_data['activation_time'] ) )
 				$section .= '<div class="description"><p>' . sprintf( esc_html( __( 'Associated on %s', 'facebook' ) ), '<time datetime="' . gmstrftime( '%FT%T', $facebook_user_data['activation_time'] ) . '+00:00">' . date_i18n( get_option('date_format'), $facebook_user_data['activation_time'] ) . '</time>' ) . '</p></div>';
+			$section .= '<p class="submit"><input id="facebook-remove" name="facebook_remove" class="button button-primary" type="submit" value="' . esc_attr( _x( 'Remove Facebook account', 'Remove an association between a Facebook account and a WordPress user profile', 'facebook' ) ) . '" />' . '</p>';
 			$section .= '</td></tr>';
 
 			if ( ! class_exists( 'Facebook_WP_Extend' ) )
@@ -132,16 +143,48 @@ class Facebook_User_Profile {
 	}
 
 	/**
-	 * Save custom user information
+	 * Save custom user information.
 	 *
 	 * @since 1.2
+	 *
+	 * @uses current_user_can() current user must be able to edit the passed WordPress user ID
 	 * @param int $wordpress_user_id WordPress user identifier
+	 * @return void
 	 */
 	public static function save_data( $wordpress_user_id ) {
 		if ( ! ( $wordpress_user_id && current_user_can( 'edit_user', $wordpress_user_id ) ) )
 			return;
 
+		// allow decoupling of a WordPress account and a Facebook account
+		if ( isset( $_POST['facebook_remove'] ) ) {
+			// WordPress Facebook User helper functions
+			if ( ! class_exists( 'Facebook_User' ) )
+				require_once( dirname( dirname(__FILE__) ) . '/facebook-user.php' );
+
+			$facebook_user_id = Facebook_User::get_facebook_profile_id( $wordpress_user_id );
+			if ( $facebook_user_id ) {
+
+				// delete mapped FBID and other data
+				Facebook_User::delete_user_meta( $wordpress_user_id, 'fb_data' );
+
+				// delete post to Timeline opt-in if stored
+				Facebook_User::delete_user_meta( $wordpress_user_id, 'facebook_timeline_disabled' );
+
+				// Load WP HTTP helpers
+				if ( ! class_exists( 'Facebook_WP_Extend' ) )
+					require_once( dirname( dirname(__FILE__) ) . '/includes/facebook-php-sdk/class-facebook-wp.php' );
+
+				// Revoke connection to app and all permissions
+				Facebook_WP_Extend::graph_api_with_app_access_token( $facebook_user_id . '/permissions', 'DELETE' );
+			}
+			unset( $facebook_user_id );
+
+			// no need to store any other Facebook data
+			return;
+		}
+
 		if ( isset( $_POST['facebook_fbid'] ) && ctype_digit( $_POST['facebook_fbid'] ) ) {
+			// WordPress Facebook User helper functions
 			if ( ! class_exists( 'Facebook_User' ) )
 				require_once( dirname( dirname(__FILE__) ) . '/facebook-user.php' );
 
@@ -167,10 +210,12 @@ class Facebook_User_Profile {
 		}
 
 		if ( isset( $_POST[ 'facebook_timeline' ] ) && $_POST[ 'facebook_timeline' ] == '1' ) {
+			// WordPress Facebook User helper functions
 			if ( ! class_exists( 'Facebook_User' ) )
 				require_once( dirname( dirname(__FILE__) ) . '/facebook-user.php' );
 			Facebook_User::delete_user_meta( $wordpress_user_id, 'facebook_timeline_disabled' ); // delete if stored
 		} else {
+			// WordPress Facebook User helper functions
 			if ( ! class_exists( 'Facebook_User' ) )
 				require_once( dirname( dirname(__FILE__) ) . '/facebook-user.php' );
 			Facebook_User::update_user_meta( $wordpress_user_id, 'facebook_timeline_disabled', '1' );

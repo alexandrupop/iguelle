@@ -259,7 +259,7 @@ body.home #content-area { border-top: 1px solid #eaeaea; }
 
 .et_pt_blogentry a.readmore { text-decoration: none; }
 
-body.woocommerce div.product form.cart div.quantity, body.woocommerce #content div.product form.cart div.quantity { margin: -4px 17px 0 0; }
+body.woocommerce form.cart div.quantity, body.woocommerce #content div.product form.cart div.quantity { margin: -4px 17px 0 0 !important; float: left; }
 
 /*------------------------------------------------*/
 /*---------------[DROPDOWN MENU]------------------*/
@@ -1093,4 +1093,32 @@ body.home .et-products {
   float: none !important;
   width: auto !important;
   margin: 0 0 40px !important;
+}
+.igu_product_li .igu_product_li_left {
+  
+}
+.igu_product_li .igu_product_li_right {
+  margin-left: 3%
+}
+
+.onsale {
+  background: url(images/sale.png) !important;
+  right: -40px !important;
+  top: -30px !important;
+  border-radius: 0 !important;
+  border:none !important;
+  width: 60px !important;
+  height: 60px !important;
+  line-height: 44px !important;
+  padding: 0 4px 0 0 !important;
+  background-size: 100% !important;
+  background-repeat: no-repeat !important;
+}
+
+body.woocommerce .et-main-price, body.woocommerce .read-more, body.woocommerce .comment-reply-link, body.woocommerce #respond .form-submit #submit, body.woocommerce a.button.alt:hover, body.woocommerce button.button.alt:hover, body.woocommerce input.button.alt:hover, body.woocommerce #respond input#submit.alt:hover, body.woocommerce #content input.button.alt:hover, body.woocommerce a.button.alt, body.woocommerce button.button.alt, body.woocommerce input.button.alt, body.woocommerce #respond input#submit.alt, body.woocommerce #content input.button.alt {
+  background-image:linear-gradient(#626262 0%, #545454 100%); 
+  border-color:#373737;
+}
+.et-products li {
+  text-align: left;
 }

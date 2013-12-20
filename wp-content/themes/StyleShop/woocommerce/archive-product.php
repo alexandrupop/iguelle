@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 get_header('shop'); ?>
 
-<div id="content-area" class="clearfix fullwidth">
+<div id="content-area" class="clearfix fullwidth" style="padding-top: 0px;">
 	<div id="main-area">
 		<?php
 			/**
@@ -25,13 +25,13 @@ get_header('shop'); ?>
 			//do_action('woocommerce_before_main_content');
 		?>
 
-		<h1 class="page-title"><?php woocommerce_page_title(); ?></h1>
+		<h1 class="page-title" style="display: none;"><?php woocommerce_page_title(); ?></h1>
 
 		<?php do_action( 'woocommerce_archive_description' ); ?>
 
 		<?php if ( have_posts() ) : ?>
 
-			<?php do_action('woocommerce_before_shop_loop'); ?>
+			<?php // do_action('woocommerce_before_shop_loop'); ?>
 
 			<ul class="et-products">
 

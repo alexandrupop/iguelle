@@ -15,8 +15,8 @@ global $post, $woocommerce;
 <div class="images">
 <?php
 	$thumb = '';
-	$width = (int) apply_filters( 'et_single_product_image_width', 280 );
-	$height = (int) apply_filters( 'et_single_product_image_height', 231 );
+	$width = (int) apply_filters( 'et_single_product_image_width', 300 );
+	$height = (int) apply_filters( 'et_single_product_image_height', 450 );
 	$classtext = '';
 	$titletext = get_the_title();
 	$thumbnail = get_thumbnail( $width, $height, $classtext, $titletext, $titletext, true, 'SingleProductImage' );

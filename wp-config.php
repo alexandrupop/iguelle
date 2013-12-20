@@ -33,6 +33,10 @@ define('DB_CHARSET', 'utf8');
 /** Schema pentru unificare. Nu faceți modificări dacă nu sunteți siguri. */
 define('DB_COLLATE', '');
 
+define( 'WP_CACHE', true );
+
+define( 'WP_MEMORY_LIMIT', '64M' );
+
 /**#@+
  * Cheile unice pentru autentificare
  *
