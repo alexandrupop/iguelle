@@ -51,9 +51,9 @@ $et_price_before = 'variable' == $product->product_type ? $product->min_variatio
   <div class="igu_product_li_right" style="float: left; width: 27%">
 <?php woocommerce_show_product_sale_flash( $post, $product ); ?>
     <? do_action( 'woocommerce_single_product_summary' ); ?>
-    <? ///do_action( 'woocommerce_after_single_product_summary' ); ?>
+    <? //do_action( 'woocommerce_after_single_product_summary' ); ?>
 
-    <?php // do_action( 'woocommerce_after_shop_loop_item' ); ?>  </div>
+    <?php //do_action( 'woocommerce_after_shop_loop_item' ); ?>  </div>
   <div class="clear"></div>
 
 </li>

@@ -1122,3 +1122,43 @@ body.woocommerce .et-main-price, body.woocommerce .read-more, body.woocommerce .
 .et-products li {
   text-align: left;
 }
+.by-iguelle {
+  display: block;
+  position: absolute;
+  background: url(images/by-iguelle.png) !important;
+  background-size: 100% !important;
+  width: 96px;
+  height: 30px;
+  background-repeat: no-repeat !important;
+  right: 0px;
+  top: 34px;
+}
+.price-holder {
+  margin-top: 40px;
+}
+.price-holder p {
+  font-weight: bold !important;
+  font-size: 28px !important;
+}
+body.woocommerce form.cart {
+  margin-bottom: 10px !important;
+}
+body.woocommerce form.cart div.quantity, body.woocommerce #content div.product form.cart div.quantity {
+  margin: 0 !important;
+}
+.single_add_to_cart_button {
+  font-size: 12px !important; 
+  padding: 8px !important;
+  margin: 3px 0 0 10px !important;
+}
+.shop_attributes td, .shop_attributes th, .shop_attributes p {
+  line-height: auto !important;
+  padding: 2px !important;
+}
+.shop_attributes p {
+  line-height: auto !important;
+  padding: 0px !important;
+}
+.shop_attributes th {
+  max-width: 120px !important;
+}
