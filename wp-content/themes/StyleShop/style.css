@@ -1131,7 +1131,7 @@ body.woocommerce .et-main-price, body.woocommerce .read-more, body.woocommerce .
   height: 30px;
   background-repeat: no-repeat !important;
   right: 0px;
-  top: 34px;
+  bottom: -30px;
 }
 .price-holder {
   margin-top: 40px;
@@ -1161,4 +1161,9 @@ body.woocommerce form.cart div.quantity, body.woocommerce #content div.product f
 }
 .shop_attributes th {
   max-width: 120px !important;
+}
+
+h1.product_title { 
+  position: relative;
+  padding-bottom: 5px;
 }
