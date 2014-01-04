@@ -16,13 +16,13 @@
 
 // ** Setările MySQL: aceste informații pot fi obținute de la serviciile de găzduire ** //
 /** Numele bazei de date pentru WordPress */
-define('DB_NAME', 'iguellero');
+define('DB_NAME', 'iguelle_wp');
 
 /** Numele de utilizator MySQL */
-define('DB_USER', 'root');
+define('DB_USER', 'iguelle_wp');
 
 /** Parola utilizatorului MySQL */
-define('DB_PASSWORD', 'root');
+define('DB_PASSWORD', 'Alex6546');
 
 /** Adresa serverului MySQL */
 define('DB_HOST', 'localhost');
