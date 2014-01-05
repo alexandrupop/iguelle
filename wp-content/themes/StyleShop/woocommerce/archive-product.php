@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 get_header('shop'); ?>
 
 <div id="content-area" class="clearfix fullwidth" style="padding-top: 0px;">
+  <?php if ( 'on' == et_get_option( 'styleshop_featured', 'on' ) && is_page( 'Shop' )  ) get_template_part( 'includes/featured', 'home' ); ?>
+
 	<div id="main-area">
 		<?php
 			/**
