@@ -1167,3 +1167,6 @@ h1.product_title {
   position: relative;
   padding-bottom: 5px;
 }
+#logo {
+  width: 150px;
+}
