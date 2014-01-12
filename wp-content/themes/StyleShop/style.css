@@ -45,7 +45,7 @@ article, aside, footer, header, hgroup, nav, section { display: block; }
 /*-----------------[BASIC STYLES]-----------------*/
 /*------------------------------------------------*/
 
-body { font-family: 'Open Sans', Arial, sans-serif; font-size: 14px; color: #555; background-size:100% auto; background-position: top center !important; background-repeat: no-repeat !important; }
+body { font-family: 'Open Sans', Arial, sans-serif; font-size: 14px; color: #555; background-size:100% auto !important; background-color:#151515 !important; background-position: top center !important; background-repeat: no-repeat !important; }
 
 a { text-decoration: none; color: #aed23f; }
 a:hover { text-decoration: underline; }
