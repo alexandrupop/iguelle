@@ -38,7 +38,7 @@ define('DB_COLLATE', '');
 
 define( 'WP_CACHE', true );
 
-define( 'WP_MEMORY_LIMIT', '64M' );
+define( 'WP_MEMORY_LIMIT', '256M' );
 
 /**#@+
  * Cheile unice pentru autentificare
