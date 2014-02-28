@@ -75,6 +75,11 @@ $table_prefix  = 'wp_';
  */
 define ('WPLANG', 'ro_RO');
 
+define('SCRIPT_DEBUG', true);
+define('CONCATENATE_SCRIPTS', false);
+define('COMPRESS_SCRIPTS', false);
+define('COMPRESS_CSS', false);
+
 /**
  * Pentru dezvoltatori: WordPress în mod de depanare.
  *
